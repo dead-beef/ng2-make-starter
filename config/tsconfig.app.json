@@ -1,0 +1,16 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"outFile": "../build/js/app.js",
+		"types": []
+	},
+	"include": [
+		"../src/*",
+		"../src/**/*"
+	],
+	"exclude": [
+		"../src/test.ts",
+		"../**/*.spec.ts",
+		"../**/.*"
+	]
+}

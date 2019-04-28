@@ -1,0 +1,83 @@
+#!/usr/bin/env node
+// -*- mode: js -*-
+
+const fs = require('fs');
+const path = require('path');
+
+function getPackageName(fname) {
+	let dir = path.dirname(fname);
+	let prev = fname;
+	while(dir !== prev) {
+		prev = dir;
+		dir = path.dirname(dir);
+		if(fs.existsSync(path.join(prev, 'package.json'))) {
+			let res = path.basename(prev);
+			let parent = path.basename(dir);
+			if(parent[0] === '@') {
+				res = path.join(parent, res);
+			}
+			return res;
+		}
+	}
+	throw new Error('No package.json for file ' + fname);
+}
+
+function addAmdName(file, name) {
+	let found = 0;
+	file = file.replace(
+		/(define\.amd[\s?(){}]+define\s*\(\s*)(.)/g,
+		(match, defineStart, argStart) => {
+			++found;
+			//console.log('match', found, match);
+			switch(argStart) {
+				case '"':
+				case '\'':
+					break;
+				default:
+					match = defineStart.concat(
+						JSON.stringify(name),
+						',',
+						argStart
+					);
+					//console.error(match);
+					break;
+			}
+			return match;
+		}
+	);
+	switch(found) {
+		case 0:
+			//console.error('not found');
+			if(name !== 'almond') {
+				console.error('Warning: no module definition found in', name);
+			}
+			break;
+		case 1:
+			break;
+		default:
+			console.error(
+				'Warning:', found, 'module definitions found in', name
+			);
+			break;
+	}
+	return file;
+}
+
+function read(fname) {
+	let file = fs.readFileSync(fname).toString();
+	let pkgname = getPackageName(fname);
+	//console.error(fname, pkgname);
+	file = addAmdName(file, pkgname);
+	return file;
+}
+
+let args = process.argv.slice(2);
+
+if(!args.length) {
+	console.error('Usage:', __filename, '<file...>');
+	process.exit(1);
+}
+
+for(let fname of args) {
+	console.log(read(fname));
+}
