@@ -1,0 +1,42 @@
+#!/usr/bin/env node
+// -*- mode: js -*-
+
+const fs = require('fs');
+const path = require('path');
+
+
+let main = (root, files) => `
+export function get() { return [
+${files.map(
+	(file) => `require(${JSON.stringify(
+		path.relative(root, file).replace(/\.[^.]+$/, '')
+	)})`
+).join(',')}
+];}
+`;
+
+
+const program = require('commander')
+	.version('0.0.0')
+	.arguments('<file...>')
+	.option(
+		'-o, --output <file>',
+		'output file (default: stdout)'
+	)
+	.option(
+		'-r, --root <dir>',
+		'root directory (default: process.cwd())',
+		process.cwd()
+	)
+	.parse(process.argv);
+
+if(!program.args.length) {
+	console.error('Warning: empty module list');
+}
+let output = main(program.root, program.args);
+if(program.output) {
+	fs.writeFileSync(program.output, output);
+}
+else {
+	console.log(output);
+}

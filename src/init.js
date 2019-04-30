@@ -14,4 +14,10 @@ function createSubmodules(moduleName) {
 
 require('zone.js');
 createSubmodules('rxjs');
-require('src/main');
+
+if(typeof jasmine !== 'undefined') {
+	require('src/main.spec');
+}
+else {
+	require('src/main');
+}

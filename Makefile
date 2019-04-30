@@ -9,9 +9,11 @@ APP_DIR := src
 CONFIG_DIR := config
 
 TSC = tsc --build $(CONFIG_DIR)/tsconfig.app.json
+TSC_TEST = tsc --build $(CONFIG_DIR)/tsconfig.spec.json
 NG2_SLM = slm -i $(1) -o $(2) --ng2
 NG2_TEMPLATE_CONCAT = ng2-template-concat -r $(TMPL_DIR) -o $(2) $(1)
 UMD_CONCAT = ./bin/umd-concat $(1) >$(2).tmp && $(MV) $(2).tmp $(2)
+CREATE_MODULE_LIST = ./bin/create-module-list -r . -o $(2) $(1)
 
 SLM_BUILD_DIR := $(BUILD_DIR)/slm
 TS_BUILD_DIR := $(BUILD_DIR)/tsc/app
@@ -30,6 +32,9 @@ TS_DIRS := $(APP_DIR)
 TS_IGNORE := %.spec.ts
 TS_FILES := $(foreach d,$(TS_DIRS),$(call rwildcard,$d/,*.ts))
 TS_FILES := $(filter-out $(TS_IGNORE),$(TS_FILES))
+
+TS_TEST_FILES := $(foreach d,$(TS_DIRS),$(call rwildcard,$d/,*.spec.ts))
+TS_TEST_LIST := $(BUILD_DIR)/test.list.ts
 
 TMPL_DIR := $(APP_DIR)
 TMPL_FILES := $(call rwildcard,$(TMPL_DIR)/components/,*.slm)
@@ -120,17 +125,18 @@ $(_fonts) $(_css): $(_deps) | $(DIST_DIR)/fonts/$1
 	                   -c $(BUILD_DIR) -f $(DIST_DIR)/fonts/$1 -F ../fonts/$1
 endef
 
+
 $(call build-wildcards,*.slm,$(TMPL_DIR),$(SLM_BUILD_DIR),.slm,.html,NG2_SLM)
 $(call build-tmpl,$(TMPL_FILES),templates.ts)
 TMPL_DIR := $(SLM_BUILD_DIR)
 
 $(call build-ts,$(TS_FILES),$(APP_NAME).js)
 $(call build-vendor-js,$(VENDOR_JS_FILES),$(VENDOR_NAME).js)
-$(call copy-files,$(APP_DIR)/init.js,$(APP_DIR),$(BUILD_DIR)/js)
 
 $(call build-css,main.scss,$(APP_NAME).css)
 $(call build-css,$(VENDOR_NAME).scss,$(VENDOR_NAME).css)
 
+$(call copy-files,$(APP_DIR)/init.js,$(APP_DIR),$(BUILD_DIR)/js)
 $(call copy-files,$(SLM_BUILD_DIR)/index.html,$(SLM_BUILD_DIR),$(DIST_DIR))
 $(call copy-files,$(COPY_FILES),$(APP_DIR),$(DIST_DIR))
 
@@ -145,6 +151,10 @@ $(call copy-files,$(COPY_FILES),$(APP_DIR),$(DIST_DIR))
 #$(call copy-wildcards,$(FONT_TYPES),\
                       node_modules/font-awesome/fonts,\
                       $(DIST_DIR)/fonts/font-awesome)
+
+$(call build,$(filter-out $(APP_DIR)/main.spec.ts,$(TS_TEST_FILES)),$(TS_TEST_LIST),CREATE_MODULE_LIST,,,test)
+$(call build,$(TS_TEST_FILES) $(TS_TEST_LIST),$(BUILD_DIR)/test.js,TSC_TEST,,,test)
+
 
 $(call main)
 
