@@ -15,6 +15,7 @@ A starter kit for standalone Angular 2+ application based on NodeJS and Make.
     * `./src/css/main.scss` - main application stylesheet
     * `./src/css/vendor.scss` - main vendor stylesheet
   * `./src/img` - images
+* `./bin` - build scripts
 * `./build` - temporary build files
 * `./dist` - bundled application
 * `./e2e` - end to end tests
