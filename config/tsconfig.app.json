@@ -6,11 +6,12 @@
 	},
 	"include": [
 		"../src/*",
-		"../src/**/*"
+		"../src/**/*",
+		"../build/templates.ts"
 	],
 	"exclude": [
 		"../src/test.ts",
-		"../**/*.spec.ts",
-		"../**/.*"
+		"../src/**/*.spec.ts",
+		"../src/**/.*"
 	]
 }
