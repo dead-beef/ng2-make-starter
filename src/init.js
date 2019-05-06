@@ -13,6 +13,7 @@ function createSubmodules(moduleName) {
 }
 
 require('zone.js');
+require('@clr/icons');
 createSubmodules('rxjs');
 
 if(typeof jasmine !== 'undefined') {

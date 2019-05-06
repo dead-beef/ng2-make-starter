@@ -1,22 +1,36 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 import { NgxsModule } from '@ngxs/store';
 import { ClarityModule } from '@clr/angular';
 
 import { MainRoutingModule } from './main-routing.module';
-import { AppComponent } from '../../components/app/app.component';
+import { MainLayoutComponent } from 'src/components/main-layout/main-layout.component';
+import { Page1Component } from 'src/components/page1/page1.component';
+import { Page2Component } from 'src/components/page2/page2.component';
+import { ItemListState } from 'src/states/item-list.state';
+import { ColorState } from 'src/states/colors.state';
+
 
 @NgModule({
 	declarations: [
-		AppComponent
+		MainLayoutComponent,
+		Page1Component,
+		Page2Component
 	],
 	imports: [
 		BrowserModule,
+		FormsModule,
+		ReactiveFormsModule,
 		ClarityModule,
-		NgxsModule.forRoot(),
-		MainRoutingModule
+		MainRoutingModule,
+		NgxsModule.forRoot([
+			ItemListState,
+			ColorState
+		]),
 	],
 	providers: [],
-	bootstrap: [AppComponent]
+	bootstrap: [MainLayoutComponent]
 })
 export class MainModule {}

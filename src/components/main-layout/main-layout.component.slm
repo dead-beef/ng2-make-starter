@@ -1,0 +1,25 @@
+clr-main-container [style.background-color]="background$ | async"
+  clr-header
+    .header-nav [clr-nav-level]="1"
+      .branding
+        a routerLink="/"
+          clr-icon shape="application"
+          span.title = "{{ title }}"
+      a.nav-link.nav-text[
+        routerLink="/" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: true}"
+      ]
+        | Home
+      a.nav-link.nav-text[
+        routerLink="/page1" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: true}"
+      ]
+        | Page 1
+      a.nav-link.nav-text[
+        routerLink="/page2" routerLinkActive="active"
+        [routerLinkActiveOptions]="{exact: true}"
+      ]
+        | Page 2
+  .content-container
+    main.content-area
+      router-outlet

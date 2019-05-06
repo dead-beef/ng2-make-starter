@@ -10,7 +10,7 @@ html
     title
       | ng2-make-starter
   body
-    app-root
+    main-layout
     script src="js/vendor.js"
     script src="js/app.js"
     script src="js/init.js"

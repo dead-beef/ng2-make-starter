@@ -1,0 +1,29 @@
+.clr-row
+  .clr-col-12
+    table.table
+      thead
+        tr
+          th = "Name"
+          th = "Value"
+          th = "Delete"
+      tbody
+        tr *ngFor="let item of items$ | async"
+          td = "{{ item.name }}"
+          td = "{{ item.value }}"
+          td
+            a (click)="removeItem(item)"
+              clr-icon shape="trash"
+
+  .clr-col-12
+    form.clr-row.clr-align-items-end[clrForm]
+      .clr-col-12.clr-col-sm-4
+        clr-input-container
+          label = "Name"
+          input.fill-width[clrInput type="text" #name]
+      .clr-col-12.clr-col-sm-4
+        clr-input-container
+          label = "Value"
+          input.fill-width[clrInput type="text" #value]
+      .clr-col-12.clr-col-sm-4
+        a.btn.btn-block (click)="addItem(name.value, value.value)"
+          | Add item

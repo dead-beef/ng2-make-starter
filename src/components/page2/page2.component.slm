@@ -1,0 +1,8 @@
+.clr-row.clr-align-items-end
+  .clr-col-6
+    clr-input-container
+      label = "Value"
+      input.fill-width[clrInput type="text" [formControl]="bgColor"]
+  .clr-col-6
+    button.btn.btn-block (click)="resetColors()"
+      | Reset
