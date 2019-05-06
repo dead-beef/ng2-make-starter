@@ -8,12 +8,18 @@ VENDOR_NAME := vendor
 APP_DIR := src
 CONFIG_DIR := config
 
-TSC = tsc --build $(CONFIG_DIR)/tsconfig.app.json
-TSC_TEST = tsc --build $(CONFIG_DIR)/tsconfig.spec.json
+TSCONFIG_APP := $(CONFIG_DIR)/tsconfig.app.json
+TSCONFIG_TEST := $(CONFIG_DIR)/tsconfig.spec.json
+
+TSC = tsc --build $(TSCONFIG_APP)
+TSC_TEST = tsc --build $(TSCONFIG_TEST)
 NG2_SLM = slm -i $(1) -o $(2) --ng2
 NG2_TEMPLATE_CONCAT = ng2-template-concat -r $(TMPL_DIR) -o $(2) $(1)
 UMD_CONCAT = ./bin/umd-concat $(1) >$(2).tmp && $(MV) $(2).tmp $(2)
 CREATE_MODULE_LIST = ./bin/create-module-list -r . -o $(2) $(1)
+
+TSC_WATCH = tsc --build $(TSCONFIG_APP) --watch &
+TSC_TEST_WATCH = tsc --build $(TSCONFIG_TEST) --watch &
 
 SLM_BUILD_DIR := $(BUILD_DIR)/slm
 TS_BUILD_DIR := $(BUILD_DIR)/tsc/app
@@ -70,11 +76,14 @@ endef
 
 # $(call build-ts, src_files, dist_file)
 define build-ts
-$(call build-and-minify,\
-    $(1),\
-    $(BUILD_DIR)/js/$(2),\
-    $(MIN_DIR)/js/$(2),\
-    TSC,SOURCE_MAP_UGLIFY)
+$(if $(TSC_SKIP),\
+     $(call build,$(BUILD_DIR)/js/$(2),\
+                  $(MIN_DIR)/js/$(2),\
+                  SOURCE_MAP_UGLIFY,,,min),\
+     $(call build-and-minify,$(1),\
+                             $(BUILD_DIR)/js/$(2),\
+                             $(MIN_DIR)/js/$(2),\
+                             TSC,SOURCE_MAP_UGLIFY))
 endef
 
 # $(eval $(call do-build-tmpl, src_files, build_file))
@@ -153,7 +162,7 @@ $(call copy-files,$(COPY_FILES),$(APP_DIR),$(DIST_DIR))
                       $(DIST_DIR)/fonts/font-awesome)
 
 $(call build,$(filter-out $(APP_DIR)/main.spec.ts,$(TS_TEST_FILES)),$(TS_TEST_LIST),CREATE_MODULE_LIST,,,test)
-$(call build,$(TS_TEST_FILES) $(TS_TEST_LIST),$(BUILD_DIR)/test.js,TSC_TEST,,,test)
+$(if $(TSC_SKIP),,$(call build,$(TS_TEST_FILES) $(TS_TEST_LIST),$(BUILD_DIR)/test.js,TSC_TEST,,,test))
 
 
 $(call main)
@@ -178,12 +187,14 @@ stop:
 	$(call prefix,server,$(SERVER_STOP))
 
 watch:
-	$(call prefix,build,-$(RESET_MAKE))
-	$(call prefix,watch,$(call WATCH,$(WATCH_FILES),'$(RESET_MAKE)'))
+	$(call prefix,build,-$(RESET_MAKE) TSC_SKIP=1)
+	$(call prefix,watch-ts,$(TSC_WATCH))
+	$(call prefix,watch,$(call WATCH,$(WATCH_FILES),'$(RESET_MAKE) TSC_SKIP=1'))
 
 min-watch:
-	$(call prefix,build,-$(RESET_MAKE) min)
-	$(call prefix,watch,$(call WATCH,$(WATCH_FILES),'$(RESET_MAKE) min'))
+	$(call prefix,build,-$(RESET_MAKE) TSC_SKIP=1 min)
+	$(call prefix,watch-ts,$(TSC_WATCH_TEST))
+	$(call prefix,watch,$(call WATCH,$(WATCH_FILES),'$(RESET_MAKE) TSC_SKIP=1 min'))
 
 #pre-test: all
 
@@ -191,6 +202,7 @@ test:
 	$(call prefix,test,karma start config/karma.conf.js --single-run)
 
 test-watch:
+	$(call prefix,watch-ts,$(TSC_TEST_WATCH))
 	$(call prefix,test,karma start config/karma.conf.js)
 
 test-e2e:
